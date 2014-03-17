@@ -14,4 +14,4 @@ Contents
 
 Utility | Description | Language
 ------- | ----------- | --------
-packdump | Packet sniffer. | C
+packdump | Packet sniffer | C
