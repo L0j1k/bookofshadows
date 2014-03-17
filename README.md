@@ -12,6 +12,6 @@ source contained herein.
 Contents
 ===
 
-Utility | Description
-------- | -----------
-packdump | (C) Packet sniffer.
+Utility | Description | Language
+------- | ----------- | --------
+packdump | Packet sniffer. | C
