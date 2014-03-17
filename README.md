@@ -1,5 +1,4 @@
-Book of Shadows
-====
+## Book of Shadows
 
 The story goes that the older a programmer gets, the less he or she wants to learn. For shame! The day I stop 
 learning is the day I've died. This is a collection of various utilities with a purpose very similar to the 
@@ -9,8 +8,7 @@ source contained herein.
 
 [creepy witchcraft-like symbol goes here]
 
-Contents
-===
+## Contents
 
 Utility | Description | Language
 ------- | ----------- | --------
