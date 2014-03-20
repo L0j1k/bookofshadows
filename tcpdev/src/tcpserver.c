@@ -11,6 +11,7 @@
 
 #include <arpa/inet.h>
 #include <errno.h>
+#include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,7 +37,8 @@ int main( int argc, char **argv ) {
 
   Boolean finished = false;
   char buffer[1024];
-  int bindSock, listenSock, serverSock;
+  in_port_t listenSock;
+  int bindSock, serverSock;
   static const char *version = "0.0.1";
   static const char *phase = "prealpha";
   struct sockaddr_in clientAddr;
