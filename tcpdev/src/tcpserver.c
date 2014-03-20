@@ -24,6 +24,12 @@ void error( char *message ) {
   exit(1);
 }
 
+void usage( char *name ) {
+  printf("usage: %s [port]\n", name);
+  printf("  [port]     TCP port to bind server on\n");
+  exit(1);
+}
+
 int main( int argc, char **argv ) {
   typedef enum Boolean { false, true } Boolean;
 
@@ -33,8 +39,12 @@ int main( int argc, char **argv ) {
   Boolean finished = false;
   struct sockaddr_in server;
   struct hostent *h;
-  int listensock, serversock;
+  int listenport, listensock, serversock;
   char buffer[1024];
+
+  if (argc != 2) usage(argv[0]);
+  listenport = *argv[1];
+  if (listenport < 1 || listenport > 65535) usage(argv[0]);
 
   printf("tcpserver -- TCP-based protocol development harness (server) v%s-%s\n", version, phase);
   printf("Written by L0j1k@L0j1k.com -- Released under BSD3\n\n");
@@ -44,6 +54,7 @@ int main( int argc, char **argv ) {
 
   while (!finished) {
     // @debug begin
+    
     // @debug end
   }
 
