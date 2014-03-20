@@ -10,6 +10,7 @@
  */
 
 #include <arpa/inet.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,7 +21,7 @@
 #endif
 
 void error( char *message ) {
-  printf("error: [%s]\n", message);
+  perror(message);
   exit(1);
 }
 
@@ -33,24 +34,30 @@ void usage( char *name ) {
 int main( int argc, char **argv ) {
   typedef enum Boolean { false, true } Boolean;
 
+  Boolean finished = false;
+  char buffer[1024];
+  int bindSock, listenSock, serverSock;
   static const char *version = "0.0.1";
   static const char *phase = "prealpha";
-
-  Boolean finished = false;
-  struct sockaddr_in server;
-  struct hostent *h;
-  int listenport, listensock, serversock;
-  char buffer[1024];
+  struct sockaddr_in clientAddr;
+  struct sockaddr_in serverAddr;
+  unsigned short listenport;
 
   if (argc != 2) usage(argv[0]);
   listenport = *argv[1];
-  if (listenport < 1 || listenport > 65535) usage(argv[0]);
 
   printf("tcpserver -- TCP-based protocol development harness (server) v%s-%s\n", version, phase);
   printf("Written by L0j1k@L0j1k.com -- Released under BSD3\n\n");
 
-  if ((serversock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) error("cannot create socket()");
-  if ((listensock = listen(serversock, _TCPDEV_MAXCONN)) < 0) error("cannot listen()");
+  if ((serverSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) error("socket()");
+  memset(&serverAddr, 0, sizeof(serverAddr));
+  serverAddr.sin_family = AF_INET;
+  serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  serverAddr.sin_port = htons(listenport);
+
+  if ((bindSock = bind(serverSock, (struct sockaddr *) &serverAddr, sizeof(serverAddr))) < 0) error("bind()");
+
+  if ((listenSock = listen(serverSock, _TCPDEV_MAXCONN)) < 0) error("listen()");
 
   while (!finished) {
     // @debug begin
