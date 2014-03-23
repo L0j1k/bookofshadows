@@ -44,7 +44,7 @@ void handleTCPClient( int clientSocket ) {
   char buffer[_TCPDEV_BUFFERSIZE];
 
   ssize_t numBytesReceived = recv(clientSocket, buffer, _TCPDEV_BUFFERSIZE, 0);
-  if (numBytesReceived < 0) error("recv()");
+  if (numBytesReceived < 0) sysError("recv()");
 
   while (numBytesReceived > 0) {
     ssize_t numBytesSent = send(clientSocket, buffer, numBytesReceived, 0);
@@ -53,10 +53,9 @@ void handleTCPClient( int clientSocket ) {
     } else if (numBytesSent != numBytesReceived) {
       userError("send()", "unexpected number of bytes");
     }
+    numBytesReceived = recv(clientSocket, buffer, _TCPDEV_BUFFERSIZE, 0);
+    if (numBytesReceived < 0) sysError("recv()");
   }
-
-  numBytesReceived = recv(clientSocket, buffer, _TCPDEV_BUFFERSIZE, 0);
-  if (numBytesReceived < 0) error("recv()");
 
   close(clientSocket);
 }
