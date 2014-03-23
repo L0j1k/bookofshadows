@@ -21,11 +21,16 @@
 #define _TCPDEV_MAXCONN 5
 #endif
 #ifndef _TCPDEV_BUFFERSIZE
-#ifndef _TCPDEV_BUFFERSIZE 1024
+#define _TCPDEV_BUFFERSIZE 1024
 #endif
 
 void error( char *message ) {
   perror(message);
+  exit(1);
+}
+
+void userError( char *location, char *message ) {
+  printf("[!] error in %s: %s", location, message);
   exit(1);
 }
 
@@ -42,8 +47,18 @@ void handleTCPClient( int clientSocket ) {
   if (numBytesReceived < 0) error("recv()");
 
   while (numBytesReceived > 0) {
-    
+    ssize_t numBytesSent = send(clientSocket, buffer, numBytesReceived, 0);
+    if (numBytesSent < 0) {
+      error("send()");
+    } else if (numBytesSent != numBytesReceived) {
+      userError("send()", "unexpected number of bytes");
+    }
   }
+
+  numBytesReceived = recv(clientSocket, buffer, _TCPDEV_BUFFERSIZE, 0);
+  if (numBytesReceived < 0) error("recv()");
+
+  close(clientSocket);
 }
 
 int main( int argc, char **argv ) {
@@ -75,7 +90,8 @@ int main( int argc, char **argv ) {
 
   while (!finished) {
     struct sockaddr_in clientAddr;
-    int clientSock = accept(serverSock, (struct sockaddr_in *) &clientAddr, (socklen_t) &sizeof(clientAddr));
+    socklen_t clientAddrLength = sizeof(clientAddr);
+    int clientSock = accept(serverSock, (struct sockaddr_in *) &clientAddr, &clientAddrLength);
     if (clientSock < 0) error("accept()");
 
     char clientName[INET_ADDRSTRLEN];
