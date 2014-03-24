@@ -238,6 +238,19 @@ var _act_message = function( clientID, message ) {
 var _act_motd = function( clientID ) {
   _server.clients[clientID].socket.write(_server.messages.motd+"\n");
 };
+// help
+var _cmd_help = function( clientID ) {
+  var socket = _server.clients[clientID].socket;
+  socket.write("Chat server v"+_app.version+" help:\n");
+  socket.write("/help                 This help message.\n");
+  socket.write("/join [channel]       Joins specified channel.\n");
+  socket.write("/leave                Leaves your current channel.\n");
+  socket.write("/list                 Lists available channels.\n");
+  socket.write("/login [username]     Login with specified username.\n");
+  socket.write("/quit                 Quit the chat server.\n");
+  socket.write("/who [channel]        Lists users in specified channel.\n");
+  socket.write("/whois [username]     Lists details of specified user.\n");
+};
 // join channel
 var _cmd_join = function( clientID, channel ) {
   if (!_server.channels[channel]) {
