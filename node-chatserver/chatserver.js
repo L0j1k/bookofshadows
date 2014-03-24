@@ -137,6 +137,8 @@ var _parseInput = function( clientID, data ) {
   // if !command and joined-channel/room, broadcast data to channel/room
   if (!containsCommand && _server.clients[clientID].currentroom) {
     _pubsub.pub('/action/message', [clientID, data]);
+  } else if (!containsCommand) {
+    _server.clients[clientID].socket.write("Cannot send message! Join a channel!\n");
   } else {
     // _server.clients[clientID].socket is the client socket
     //
@@ -144,13 +146,49 @@ var _parseInput = function( clientID, data ) {
     //  FIX -- FINISH THIS
     //
     //
-    _server.clients[clientID];
-    switch (command) {
-      case 'join':
-        _pubsub.pub('/command/join', [clientID, ]);
-        break;
-      default:
-    };
+    var input = data.split('/')[1].split(' ');
+    if (input.length > 1) {
+      var command = input[0],
+        modifier = input[1];
+      // join, leave, login, who, whois
+      switch (command) {
+        case 'join':
+          _pubsub.pub('/command/join', [clientID, modifier]);
+          break;
+        case 'login':
+          _pubsub.pub('/command/login', [clientID, modifier]);
+          break;
+        case 'who':
+          _pubsub.pub('/command/who', [clientID, modifier]);
+          break;
+        case 'whois':
+          _pubsub.pub('/command/whois', [clientID, modifier]);
+          break;
+        default:
+          _server.clients[clientID].socket.write("Command not recognized (/help for help).\n");
+      };
+    } else if (input.length == 1) {
+      var command = input[0];
+      // leave, list, quit
+      switch (command) {
+        case 'help':
+          _pubsub.pub('/command/help', [clientID]);
+          break;
+        case 'leave':
+          _pubsub.pub('/command/leave', [clientID]);
+          break;
+        case 'list':
+          _pubsub.pub('/command/list', [clientID]);
+          break;
+        case 'quit':
+          _pubsub.pub('/command/quit', [clientID]);
+          break;
+        default:
+          _server.clients[clientID].socket.write("Command not recognized (/help for help).\n");
+      };
+    } else {
+      _server.clients[clientID].socket.write("Invalid input. Try again!");
+    }
   }
 };
 
@@ -208,7 +246,7 @@ var _cmd_join = function( clientID, channel ) {
   _server.channels[channel].clients.append(clientID);
 };
 // leave channel
-var _cmd_leave = function( clientID, channel ) {
+var _cmd_leave = function( clientID ) {
   delete _server.clients[clientID].currentChannel;
   delete _server.channels[channel].clients[clientID];
   if (_server.channels[channel].clients.length == 0) {
