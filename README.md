@@ -12,5 +12,6 @@ source contained herein.
 
 Utility | Description | Language
 ------- | ----------- | --------
-packdump | Packet sniffer | C
-tcpdev | TCP-based protocol development harness | C
+c-packdump | Packet sniffer | C
+c-tcpdev | TCP-based protocol development harness | C
+node-chatserver | Simple chat server | JavaScript (Node.js)
