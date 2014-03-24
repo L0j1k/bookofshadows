@@ -260,10 +260,15 @@ var _cmd_join = function( clientID, channel ) {
 };
 // leave channel
 var _cmd_leave = function( clientID ) {
-  delete _server.clients[clientID].currentChannel;
-  delete _server.channels[channel].clients[clientID];
-  if (_server.channels[channel].clients.length == 0) {
-    delete _server.channels[channel];
+  if (_server.clients[clientID].currentChannel) {
+    var currentChannel = _server.clients[clientID].currentChannel;
+    if (_server.channels[currentChannel].clients.length == 0) {
+      delete _server.channels[currentChannel];
+    }
+    delete _server.channels[currentChannel].clients[clientID];
+    delete _server.clients[clientID].currentChannel;
+  } else {
+    _server.clients[clientID].socket.write("Invalid command. You must be in a channel to leave it!\n");
   }
 };
 // list channels
@@ -291,13 +296,17 @@ var _cmd_quit = function( clientID ) {
 };
 // list users in channel
 var _cmd_who = function( clientID, channel ) {
-  var numClients = _server.channels[channel].clients.length,
-    socket = _server.clients[clientID].socket;
-  socket.write("Users in "+channel+": ");
-  for (var i=0; i<numClients; i++) {
-    socket.write(_server.channels[channel].clients[i].username+" ");
+  if (_server.channels[channel]) {
+    var numClients = _server.channels[channel].clients.length,
+      socket = _server.clients[clientID].socket;
+    socket.write("Users in "+channel+": ");
+    for (var i=0; i<numClients; i++) {
+      socket.write(_server.channels[channel].clients[i].username+" ");
+    }
+    socket.write("\n");
+  } else {
+    _server.clients[clientID].socket.write("Channel does not exist!\n");
   }
-  socket.write("\n");
 };
 // whois details on user
 var _cmd_whois = function( clientID, user ) {
@@ -320,6 +329,7 @@ var _cmd_whois = function( clientID, user ) {
 \*/
 var _act_motd_handle = _pubsub.sub('/action/message', _act_message);
 var _act_motd_handle = _pubsub.sub('/action/motd', _act_motd);
+var _cmd_help_handle = _pubsub.sub('/command/help', _cmd_help);
 var _cmd_join_handle = _pubsub.sub('/command/join', _cmd_join);
 var _cmd_leave_handle = _pubsub.sub('/command/leave', _cmd_leave);
 var _cmd_list_handle = _pubsub.sub('/command/list', _cmd_list);
@@ -352,7 +362,6 @@ var server = net.createServer(function(socket) {
   _log("[-] Inbound connection ("+client.id+") from ("+client.ip+") at ("+_prettyTime(timestamp)+")");
 
   socket.on('end', function() {
-    // @task close out client connection
     delete _server.clients[client.id];
   });
 
